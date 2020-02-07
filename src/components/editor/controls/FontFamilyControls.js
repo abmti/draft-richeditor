@@ -11,8 +11,8 @@ var FONT_FAMILY = [
 ];
 
 const FontFamilyControls = (props) => {
-    const currentStyle = getSelectionCustomInlineStyle(props.editorState, ['FONTFAMILY']).FONTFAMILY
 
+    const currentStyle = getSelectionCustomInlineStyle(props.editorState, ['FONTFAMILY']).FONTFAMILY
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const [defaultValue, setDefaultValue] = useState(null)
 
@@ -26,6 +26,7 @@ const FontFamilyControls = (props) => {
                 setDefaultValue(defaultFontFamily)
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const toggle = (e) => {

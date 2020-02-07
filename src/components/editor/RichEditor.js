@@ -38,9 +38,10 @@ const RichEditor = (props, ref) => {
             if (contentBlock) {
                 const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
                 newEditorState = EditorState.createWithContent(contentState);
-            }   
-        } 
+            }
+        }
         setEditorState(newEditorState)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -78,7 +79,7 @@ const RichEditor = (props, ref) => {
                 e,
                 editorState,
                 4, /* maxDepth */
-        );
+            );
             if (newEditorState !== editorState) {
                 onChange(newEditorState);
             }
@@ -112,7 +113,7 @@ const RichEditor = (props, ref) => {
 
     return (
         <div className="RichEditor-root">
-            
+
             <div className="RichEditor-controls">
 
                 <InlineStyleControls
@@ -149,7 +150,7 @@ const RichEditor = (props, ref) => {
                     React.cloneElement(button, { key: index, editorState: editorState, onChange: onChange})
                 ))}
 
-            </div>     
+            </div>
             <div className={className} onClick={handleClickDiv}>
                 <Editor
                     editorState={editorState}
@@ -165,7 +166,7 @@ const RichEditor = (props, ref) => {
             </div>
 
             {props.showHtml && draftToHtml(convertToRaw(editorState.getCurrentContent()))}
-            
+
         </div>
     );
 

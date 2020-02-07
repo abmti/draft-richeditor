@@ -13,7 +13,6 @@ var FONT_SIZES = [
 const FontSizeControls = (props) => {
     
     const currentStyle = getSelectionCustomInlineStyle(props.editorState, ['FONTSIZE']).FONTSIZE
-
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const [defaultValue, setDefaultValue] = useState(null)
 
@@ -28,6 +27,7 @@ const FontSizeControls = (props) => {
                 setDefaultValue(defaultFontSize)
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const toggle = (e) => {

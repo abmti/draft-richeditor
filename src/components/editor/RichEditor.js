@@ -1,18 +1,17 @@
-import React, { useEffect, useRef, useState, useImperativeHandle } from 'react';
 import { ContentState, convertToRaw, Editor, EditorState, getDefaultKeyBinding, RichUtils } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
-import htmlToDraft from 'html-to-draftjs';
 import { getCustomStyleMap } from 'draftjs-utils';
-
+import htmlToDraft from 'html-to-draftjs';
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import blockStyleFn from "./BlockStyle";
 import BlockStyleControls from './controls/BlockStyleControls';
-import InlineStyleControls from './controls/InlineStyleControls';
 import FontFamilyControls from './controls/FontFamilyControls';
 import FontSizeControls from './controls/FontSizeControls';
-import TextAlignControls from './controls/TextAlignControls';
+import InlineStyleControls from './controls/InlineStyleControls';
 import ListControls from './controls/ListControls';
-
+import TextAlignControls from './controls/TextAlignControls';
 import './style.css';
+
 
 const RichEditor = (props, ref) => {
 
@@ -28,11 +27,18 @@ const RichEditor = (props, ref) => {
         },
         convertToHtml: () => {
             return draftToHtml(convertToRaw(editorState.getCurrentContent()));
+        },
+        getEditorState: () => {
+            return editorState
+        },
+        getEditorRef: () => {
+            return editorRef
         }
     }));
 
     useEffect(() => {
         let newEditorState = EditorState.createEmpty()
+
         if(props.initialHtml) {
             const contentBlock = htmlToDraft(props.initialHtml)
             if (contentBlock) {
@@ -40,6 +46,11 @@ const RichEditor = (props, ref) => {
                 newEditorState = EditorState.createWithContent(contentState);
             }
         }
+
+        newEditorState = EditorState.set(newEditorState, {
+            decorator: props.compositeDecorator,
+        })
+
         setEditorState(newEditorState)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -94,7 +105,6 @@ const RichEditor = (props, ref) => {
     const handleClickDiv = () => {
         editorRef.current.focus()
     }
-
 
     if (!editorState) {
         return null
@@ -171,6 +181,8 @@ const RichEditor = (props, ref) => {
     );
 
 }
+
+
 
 // Custom overrides for "code" style.
 const styleMap = {

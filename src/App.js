@@ -3,17 +3,29 @@ import { CompositeDecorator, EditorState, KeyBindingUtil, Modifier } from 'draft
 import htmlToDraft from 'html-to-draftjs';
 import { List } from "immutable";
 import React, { useRef, useState } from 'react';
-import { Button, Card, CardBody, CardHeader, Container, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
-import CustomOption from './components/CustomOption';
+import { Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
+import CustomOption from './components/editor/custom/CustomOption';
+import Suggestion from "./components/editor/custom/FindSuggestions";
+import getMentionDecorators from './components/editor/decorators/Mention';
+import ModalHandler from './components/editor/event-handler/modals';
+import SuggestionHandler from './components/editor/event-handler/suggestions';
 import RichEditor from './components/editor/RichEditor';
-import getMentionDecorators from './decorators/Mention';
-import ModalHandler from './event-handler/modals';
 
 const { hasCommandModifier, isCtrlKeyCommand } = KeyBindingUtil;
 
+const suggestions = [
+    { text: 'APPLE', value: 'apple', url: 'apple' },
+    { text: 'BANANA', value: 'banana', url: 'banana' },
+    { text: 'CHERRY', value: 'cherry', url: 'cherry' },
+    { text: 'DURIAN', value: 'durian', url: 'durian' },
+    { text: 'EGGFRUIT', value: 'eggfruit', url: 'eggfruit' },
+    { text: 'FIG', value: 'fig', url: 'fig' },
+    { text: 'GRAPEFRUIT', value: 'grapefruit', url: 'grapefruit' },
+    { text: 'HONEYDEW', value: 'honeydew', url: 'honeydew' },
+]
+
 function App() {
 
-    const editorRef = useRef();
     const richEditorRef = useRef();
     const [openModal, setOpenModal] = useState(false);
     const [editorState, setEditorState] = useState(null);
@@ -42,6 +54,13 @@ function App() {
         //if (e.keyCode === 50) {
         //    return "editor-mention";
         //}
+
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            if (SuggestionHandler.isOpen()) {
+              e.preventDefault();
+            }
+        }
+
         return "";
     }
 
@@ -85,17 +104,7 @@ function App() {
     const getSuggestions = () => mention.suggestions;
 
     const compositeDecorator = new CompositeDecorator([
-        /*
-        {
-            strategy: handleStrategy,
-            component: <HandleSpan onClick={addTemplate} />,
-        },
-        {
-            strategy: hashtagStrategy,
-            component: HashtagSpan,
-        },
-        */
-
+        
         ...getMentionDecorators({
             ...mention,
             onChange: onChangeEditor,
@@ -103,8 +112,18 @@ function App() {
             getSuggestions: getSuggestions,
             getWrapperRef: getWrapperRef,
             modalHandler: modalHandler,
-      })
-        
+        }),
+
+        new Suggestion({
+            ...mention,
+            trigger: '$',
+            onChange: onChangeEditor,
+            getEditorState: getEditorState,
+            getSuggestions: getSuggestions,
+            getWrapperRef: getWrapperRef(),
+            modalHandler: modalHandler,
+        }).getSuggestionDecorator()
+
     ]);
 
     function onChangeEditor(newState) {
@@ -116,7 +135,8 @@ function App() {
     }
 
     function getWrapperRef() {
-        return editorRef.current
+        //return richEditorRef.current.getWrapperEditorRef()
+        return null
     }
 
     return (
@@ -127,21 +147,17 @@ function App() {
                 </CardHeader>
                 <CardBody>
 
-                    <div
-                        ref={editorRef}
-                        >
-                        <RichEditor id="richeditor"
-                            toolbarCustomButtons={[<CustomOption />]}
-                            placeholder="Digite alguma coisa"
-                            handleKeyCommand={handleKeyCommand}
-                            keyBindingFn={mapKeyToEditorCommand}
-                            ref={richEditorRef}
-                            compositeDecorator={compositeDecorator}
-                            initialHtml={"<strong>Init...</strong>"}
-                            showHtml={true}
-                        />
-                    </div>
-
+                    <RichEditor id="richeditor"
+                        toolbarCustomButtons={[<CustomOption />]}
+                        placeholder="Digite alguma coisa"
+                        handleKeyCommand={handleKeyCommand}
+                        keyBindingFn={mapKeyToEditorCommand}
+                        ref={richEditorRef}
+                        compositeDecorator={compositeDecorator}
+                        initialHtml={"<strong>Init...</strong>"}
+                        showHtml={true}
+                    />
+                    
                     <button type="button" onClick={() => richEditorRef.current.focus()}>FOCUS</button>
 
                     <br />
@@ -169,95 +185,5 @@ function App() {
         </Container>
     );
 }
-
-/**
- * Super simple decorators for handles and hashtags, for demonstration
- * purposes only. Don't reuse these regexes.
- */
-const HANDLE_REGEX = /@[\w]+/g;
-const HASHTAG_REGEX = /#[\w\u0590-\u05ff]+/g;
-
-function handleStrategy(contentBlock, callback, contentState) {
-    findWithRegex(HANDLE_REGEX, contentBlock, callback);
-}
-
-function hashtagStrategy(contentBlock, callback, contentState) {
-    findWithRegex(HASHTAG_REGEX, contentBlock, callback);
-}
-
-function findWithRegex(regex, contentBlock, callback) {
-    const text = contentBlock.getText();
-    let matchArr, start;
-    while ((matchArr = regex.exec(text)) !== null) {
-        start = matchArr.index;
-        callback(start, start + matchArr[0].length);
-    }
-}
-
-function HandleSpan(props) {
-
-    const [dropdownOpen, setDropdownOpen] = useState(true);
-    const toggle = () => setDropdownOpen(prevState => !prevState);
-
-    return (
-        <span
-            style={styles.handle}
-            data-offset-key={props.offsetKey}
-        >
-            {props.children}
-
-            <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-                <DropdownToggle caret>
-                    Dropdown
-                </DropdownToggle>
-                <DropdownMenu>
-                    <DropdownItem>Foo Action</DropdownItem>
-                    <DropdownItem>Bar Action</DropdownItem>
-                    <DropdownItem onClick={props.onClick}>Quo Action</DropdownItem>
-                </DropdownMenu>
-            </Dropdown>
-
-        </span>
-    );
-};
-
-function HashtagSpan(props) {
-    return (
-        <span
-            style={styles.hashtag}
-            data-offset-key={props.offsetKey}
-        >
-            [{props.children}]
-        </span>
-    );
-};
-
-const styles = {
-    root: {
-        fontFamily: '\'Helvetica\', sans-serif',
-        padding: 20,
-        width: 600,
-    },
-    editor: {
-        border: '1px solid #ddd',
-        cursor: 'text',
-        fontSize: 16,
-        minHeight: 40,
-        padding: 10,
-    },
-    button: {
-        marginTop: 10,
-        textAlign: 'center',
-    },
-    handle: {
-        color: 'rgba(98, 177, 254, 1.0)',
-        direction: 'ltr',
-        unicodeBidi: 'bidi-override',
-    },
-    hashtag: {
-        color: 'rgba(95, 184, 138, 1.0)',
-    },
-};
-
 
 export default App;

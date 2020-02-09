@@ -10,13 +10,18 @@ import FontSizeControls from './controls/FontSizeControls';
 import InlineStyleControls from './controls/InlineStyleControls';
 import ListControls from './controls/ListControls';
 import TextAlignControls from './controls/TextAlignControls';
+import KeyDownHandler from './event-handler/keyDown';
+import FocusHandler from './event-handler/focus';
 import './style.css';
 
 
 const RichEditor = (props, ref) => {
 
     const [editorState, setEditorState] = useState(null);
+    const wrapperEditorRef = useRef();
     const editorRef = useRef(null);
+
+    const focusHandler = new FocusHandler();
 
     useImperativeHandle(ref, () => ({
         focus: () => {
@@ -33,6 +38,9 @@ const RichEditor = (props, ref) => {
         },
         getEditorRef: () => {
             return editorRef
+        },
+        getWrapperEditorRef: () => {
+            return wrapperEditorRef.current
         }
     }));
 
@@ -58,7 +66,6 @@ const RichEditor = (props, ref) => {
 
     const onChange = (editorState) => {
         setEditorState(editorState);
-        //console.debug(`FontSize: ${getSelectionCustomInlineStyle(editorState, ['FONTSIZE']).FONTSIZE}`)
     }
 
     function handleKeyCommand(command, editorState) {
@@ -122,7 +129,10 @@ const RichEditor = (props, ref) => {
 
 
     return (
-        <div className="RichEditor-root">
+        <div 
+            ref={wrapperEditorRef}
+            onKeyDown={KeyDownHandler.onKeyDown}
+            className="RichEditor-root">
 
             <div className="RichEditor-controls">
 

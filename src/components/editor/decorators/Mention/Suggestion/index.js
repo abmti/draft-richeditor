@@ -105,12 +105,13 @@ function getSuggestionComponent() {
     };
 
     componentDidMount() {
-      const editorRect = config.getWrapperRef().getBoundingClientRect();
+      //const editorRect = config.getWrapperRef().getBoundingClientRect();
       const suggestionRect = this.suggestion.getBoundingClientRect();
       const dropdownRect = this.dropdown.getBoundingClientRect();
-      let left;
+      let left = 15;
       let right;
       let bottom;
+      /*
       if (
         editorRect.width <
         suggestionRect.left - editorRect.left + dropdownRect.width
@@ -122,6 +123,7 @@ function getSuggestionComponent() {
       if (editorRect.bottom < dropdownRect.bottom) {
         bottom = 0;
       }
+      */
       this.setState({
         // eslint-disable-line react/no-did-mount-set-state
         style: { left, right, bottom },
